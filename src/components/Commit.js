@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Loading from './Loading';
 import { Form, Input, Button, Radio } from 'antd';
 import styled from 'styled-components';
@@ -25,6 +25,8 @@ const Red = styled.span`
 // waiting component에 waiting distribution 메세지
 
 export default function Commit({
+  web3,
+  contract,
   user,
   game,
   games,
@@ -32,13 +34,15 @@ export default function Commit({
   setGame,
   setGames,
 }) {
+  const [createRoom, setCreateRoom] = useState({});
   const { stage, result, isHost, isLoading } = user;
 
   const onFinish = (values) => {
     console.log('Success:', values);
     // setGame({ ...game });
-    setGame([...games, {}]);
+    setGame({ ...game, betAmount: values.betAmount });
     setUser({ ...user, isLoading: true });
+    setCreateRoom({ ...values });
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -49,7 +53,33 @@ export default function Commit({
   // isLoading은 false로
   // 그리고 setGame stage를 reveal로 바꾸기
 
+  useEffect(async () => {
+    // createRoom 함수 호출하는 tx
+    // commitment를 넣고 불러야함
+    // commitment는 이 형식
+    //
+    // const hand = choice = choiceToNumber(commitmentChoice().value);
+    if (createRoom.betAmount) {
+      const { hand, password } = createRoom;
+      const rand = web3.utils.asciiToHex(password);
+      console.log(rand);
+      const commitment = web3.utils.soliditySha3(
+        { t: 'address', v: user.address },
+        { t: 'uint8', v: hand },
+        { t: 'bytes32', v: rand }
+      );
+      console.log(commitment);
+
+      // const transactionReceipt = await contract.methods
+      //   .createRoom(commitment)
+      //   .send({ from: user.address, value: createRoom.betAmount });
+
+      // console.log(transactionReceipt);
+    }
+  }, [createRoom]);
+
   useEffect(() => {
+    console.log(game);
     // room number랑 stage 컨트랙트에서 view 하는 함수 호출
     if (isLoading) {
     }
@@ -57,6 +87,7 @@ export default function Commit({
     // joinroom 실행되면 isLoading false로 바꾸고, game stage를 reveal로 바꾸기
     return () => {
       // listener 삭제
+      // ethereum.on('disconnect', handler:    (error) => void);
     };
   }, [isLoading]);
 
@@ -67,6 +98,7 @@ export default function Commit({
       <p>
         비밀번호는 확인 시 사용됩니다. <Red>잊지마세요 !</Red>
       </p>
+
       <SubmitForm>
         <Form
           name="basic"
@@ -77,7 +109,7 @@ export default function Commit({
           autoComplete="off"
         >
           <Form.Item
-            name="RPS"
+            name="hand"
             label="가위바위보"
             rules={[
               {
@@ -87,22 +119,22 @@ export default function Commit({
             ]}
           >
             <Radio.Group buttonStyle="solid">
-              <Radio.Button value="scissors">가위</Radio.Button>
-              <Radio.Button value="rock">바위</Radio.Button>
-              <Radio.Button value="paper">보</Radio.Button>
+              <Radio.Button value={2}>가위</Radio.Button>
+              <Radio.Button value={0}>바위</Radio.Button>
+              <Radio.Button value={1}>보</Radio.Button>
             </Radio.Group>
           </Form.Item>
           {isHost ? (
             <Form.Item
-              label="배팅금액"
-              name="bet-amount"
+              label="배팅금액 (wei)"
+              name="betAmount"
               rules={[{ required: true, message: '배팅 금액을 적어주세요' }]}
             >
               <Input placeholder="Bet amount" />
             </Form.Item>
           ) : (
             <Form.Item
-              label="배팅금액"
+              label="배팅금액 (wei)"
               name="bet-amount"
               // rules={[{ required: true, message: '배팅 금액을 적어주세요' }]}
             >

@@ -78,7 +78,7 @@ export default function MainList({ games, user, setUser }) {
                   )}
                 </ListTitleStyle>
               }
-              description={'bet amount: ' + item.betAmount}
+              description={'베팅 금액: ' + item.betAmount + ' wei'}
             />
           </List.Item>
         )}

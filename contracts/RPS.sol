@@ -10,6 +10,14 @@ contract RPS {
     event OriginatorWin(address originator, address taker, uint256 betAmount);
     event TakerWin(address originator, address taker, uint256 betAmount);
    */
+    event CreatedRoom(uint256 roomNumber, uint256 betAmount);
+    event JoinedRoom(uint256 roomNumber, Stage stage);
+    event DrawGame(uint256 betAmount);
+    event OriginatorWin(address originator);
+    event TakerWin(address taker);
+    event GameStarted(GameStatus gameStarted);
+    event GameEnd(GameStatus gameEnd);
+    event ViewRooms(uint256 roomNumber, )
 
     // advenced : add none
     enum Hand {
@@ -82,6 +90,10 @@ contract RPS {
         _;
     }
 
+    function viewRooms() public view returns() {
+
+    }
+
     // hand 부분에 hashed 값이 들어가면 됨
     // isVaildHand는 주석처리 예정
     // remove isValidHand(_hand)
@@ -114,7 +126,7 @@ contract RPS {
         roomNum = roomLen;
         roomLen = roomLen + 1;
 
-        // Emit gameCreated(msg.sender, msg.value);
+        emit CreatedRoom(roomNum, msg.value);
     }
 
     // 방 넘버는 프론트에서 지정해줌, hand 부분에만 hashed 값이 들어가면 됨
@@ -135,7 +147,12 @@ contract RPS {
         rooms[roomNum].betAmount = rooms[roomNum].betAmount + msg.value;
         // compareHands(roomNum);
         rooms[roomNum].stage = Stage.STAGE_FIRST_REVEAL;
+        // game started
+        rooms[roomNum].gameStatus = GameStatus.STATUS_STARTED;
         // reveal
+
+        emit JoinedRoom(roomNum, Stage.STAGE_FIRST_REVEAL);
+        emit GameStarted(GameStatus.STATUS_STARTED);
     }
 
     // commit phase 끝
@@ -195,19 +212,21 @@ contract RPS {
         uint8 originator = uint8(rooms[roomNum].originator.hand);
         uint8 taker = uint8(rooms[roomNum].taker.hand);
 
-        rooms[roomNum].gameStatus = GameStatus.STATUS_STARTED;
-
         if (taker == originator) {
             //draw
             rooms[roomNum].originator.playerStatus = PlayerStatus.STATUS_TIE;
             rooms[roomNum].taker.playerStatus = PlayerStatus.STATUS_TIE;
+            emit DrawGame(rooms[roomNum].originator.playerBetAmount);
         } else if ((taker + 1) % 3 == originator) {
             // originator wins
             rooms[roomNum].originator.playerStatus = PlayerStatus.STATUS_WIN;
             rooms[roomNum].taker.playerStatus = PlayerStatus.STATUS_LOSE;
+            emit OriginatorWin(rooms[roomNum].originator.addr);
         } else if ((originator + 1) % 3 == taker) {
+            // taker wins
             rooms[roomNum].originator.playerStatus = PlayerStatus.STATUS_LOSE;
             rooms[roomNum].taker.playerStatus = PlayerStatus.STATUS_WIN;
+            emit TakerWin(rooms[roomNum].taker.addr);
         } else {
             rooms[roomNum].gameStatus = GameStatus.STATUS_ERROR;
         }
@@ -266,5 +285,6 @@ contract RPS {
             }
         }
         rooms[roomNum].gameStatus = GameStatus.STATUS_COMPLETE;
+        emit GameEnd(GameStatus.STATUS_COMPLETE);
     }
 }

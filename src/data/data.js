@@ -1,6 +1,7 @@
 export const initialUser = {
   // commit, reveal, distribution
   stage: null,
+  address: null,
   // win, lose, draw, null
   result: null,
   isHost: false,

@@ -6,7 +6,6 @@ const Container = styled.div`
   width: 500px;
   display: flex;
   flex-direction: column;
-  /* justify-content: center; */
   align-items: center;
 `;
 
@@ -18,7 +17,6 @@ const SubmitForm = styled.div`
 const Red = styled.span`
   color: red;
 `;
-// commit reveal 분기처리
 
 // Commit
 // isHost true이고 commit stage면

@@ -17,6 +17,8 @@ import Reveal from './Reveal';
 // Reveal : 참가하기
 
 export default function Game({
+  web3,
+  contract,
   user,
   game,
   games,
@@ -28,6 +30,8 @@ export default function Game({
     <Reveal user={user} game={game} setUser={setUser} setGame={setGame} />
   ) : (
     <Commit
+      web3={web3}
+      contract={contract}
       user={user}
       game={game}
       games={games}
